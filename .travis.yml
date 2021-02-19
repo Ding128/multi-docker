@@ -1,0 +1,21 @@
+sudo: required
+language: generic 
+services:
+  - docker
+before_install:
+  - docker build -t qwseda123/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true qwseda123/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t qwseda123/muti-client ./client
+  - docker build -t qwseda123/muti-nginx ./nginx 
+  - docker build -t qwseda123/muti-server ./server 
+  - docker build -t qwseda123/muti-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push qwseda123/muti-client
+  - docker push qwseda123/muti-nginx
+  - docker push qwseda123/muti-server
+  - docker push qwseda123/muti-worker
